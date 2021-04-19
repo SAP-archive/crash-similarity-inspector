@@ -66,7 +66,7 @@ Install the required packages:
 $ pip install -r requirements.txt
 ```
 
-In particular, we build abstract syntax tree using Python bindings for libclang:
+In addition, we build abstract syntax tree using Python bindings for libclang:
 ![](https://raw.githubusercontent.com/snlndod/mPOST/master/KDetector/02.png)
 
 ## Usage
@@ -104,4 +104,6 @@ The elapsed time in seconds:
 We love contributions! Before submitting a Pull Request, it's always good to start with a new issue first.
 
 ## License
-This library is licensed under Apache 2.0. Full license text is available in [LICENSE](https://github.com/SAP/duplicate-crash-identifier/blob/main/LICENSE).
+This repository is licensed under Apache 2.0. Full license text is available in [LICENSE](https://github.com/SAP/duplicate-crash-identifier/blob/main/LICENSE).
+
+Detailed information including third-party components and their licensing/copyright information is available via [REUSE](https://api.reuse.software/info/github.com/SAP/duplicate-crash-identifier).
