@@ -4,5 +4,5 @@ Upstream-Contact: Ethan Yang <ethan.yang01@sap.com>
 Source: https://github.com/SAP/duplicate-crash-identifier
 
 Files: *
-Copyright: 2020 SAP SE or an SAP affiliate company and duplicate-crash-identifier contributors
+Copyright: 2021 SAP SE or an SAP affiliate company and duplicate-crash-identifier contributors
 License: Apache-2.0
