@@ -18,7 +18,7 @@ class DP:
         # fill
         for i in range(1, m + 1):
             for j in range(1, n + 1):
-                if seq1[i-1] == seq2[j-1]:
+                if seq1[m-i] == seq2[n-j]:
                     dp[i][j] = dp[i-1][j-1] + 1
                 else:
                     dp[i][j] = max(dp[i-1][j], dp[i][j-1])
@@ -31,10 +31,10 @@ class DP:
                 pos2.append(n - j)
                 i -= 1
                 j -= 1
-            elif dp[i-1][j] <= dp[i][j-1]:
-                j -= 1
-            else:
+            elif dp[i-1][j] > dp[i][j-1]:
                 i -= 1
+            else:
+                j -= 1
         return pos1, pos2
 
     @staticmethod
@@ -81,22 +81,26 @@ class UF:
             The tree identifier.
         """
         while node != self.id[node]:
-            node = self.id[node] = self.id[self.id[node]]
+            # path compression by halving
+            self.id[node] = self.id[self.id[node]]
+            node = self.id[node]
         return node
 
-    def union(self, p, q):
+    def union(self, u, v):
         """
-        Combine trees containing two element nodes into a single tree.
+        Combine trees containing two elements into a single tree by rank.
         Args:
-            p: An element node.
-            q: An element node.
+            u: An element node.
+            v: An element node.
         """
-        i, j = self.find(p), self.find(q)
-        if i == j:
-            return None
-        if self.rank[i] < self.rank[j]:
-            self.id[i] = j
+        l, r = self.find(u), self.find(v)
+        if l == r:
+            return
+        # attach smaller tree to larger tree
+        if self.rank[l] < self.rank[r]:
+            self.id[l] = r
+        elif self.rank[r] < self.rank[l]:
+            self.id[r] = l
         else:
-            if self.rank[i] == self.rank[j]:
-                self.rank[i] += 1
-            self.id[j] = i
+            self.id[l] = r
+            self.rank[r] += 1
