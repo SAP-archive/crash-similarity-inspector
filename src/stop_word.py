@@ -21,7 +21,8 @@ class StopWord:
             The stop words.
         """
         words = []
-        functions, paths = [i[0] for i in processed], [i[1] for i in processed]
+        paths = [i[1] for i in processed]
+        functions = [i[0] for i in processed]
         for root in roots:
             if root not in functions:
                 continue
@@ -36,14 +37,15 @@ class StopWord:
         Count stop words and output statistics.
         """
         word_list = []
-        count = 0
         result = ETL().extract_word()
+        count, total = 0, len(result)
         for row in result:
             count += 1
             test_id = row[0]
-            print("{}, {}/{}".format(test_id, count, len(result)))
+            print("{}, {}/{}".format(test_id, count, total))
             try:
                 dump = ETL().extract_cdb(test_id)
+                processed = Process(dump).internal_process()
             except (IndexError, UnicodeDecodeError):
                 continue
             if "\n\n" in dump:
@@ -53,12 +55,10 @@ class StopWord:
                     stack = exceptions[exceptions.index(header) + len(header):]
                 except ValueError:
                     continue
-                # extract the first exception
+                # extract root cause from exceptions
                 if dump.count(header) > 1:
                     stack = stack[:stack.index("\n\n")]
-                pattern = re.compile(r"^\d+:[ ](.+)[ ]at[ ].+", re.M)
-                roots = pattern.findall(stack)
-                processed = Process(dump).internal_process()
+                roots = re.findall(r"^\d+:[ ](.+)[ ]at[ ].+", stack, re.M)
                 words = self.obtain_word(roots, processed)
-                word_list.extend(words)
+                word_list += words
         Log().chart_print(Counter(word_list).most_common(10))
