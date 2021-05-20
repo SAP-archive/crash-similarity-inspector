@@ -159,33 +159,20 @@ class ETL:
             result = sql.execute(extract_content).fetchall()
         return result
 
-    @staticmethod
-    def check_sum(func_block):
-        """
-        Convert function blocks to MD5 hash in hexadecimal format.
-        Args:
-            func_block: The function blocks in a crash dump.
-        Returns:
-            MD5 hash value.
-        """
-        text = ""
-        for blocks in func_block:
-            for block in blocks:
-                text += block
-        return hashlib.md5(text.encode("utf-8")).hexdigest()
-
     def transform(self):
         """
         Convert original crash dump information into the target data format.
         Returns:
             Documents to be stored.
         """
-        documents, count = [], 0
+        documents = []
+        hash_value = set()
         result = self.extract_qdb()
+        count, total = 0, len(result)
         for row in result:
             count += 1
             test_id, time_stamp, url, bug_id = row
-            print("{}, {}/{}".format(test_id, count, len(result)))
+            print("{}, {}/{}".format(test_id, count, total))
             try:
                 if requests.get(url, verify=False).status_code == 200:
                     dump = requests.get(url, verify=False).content.decode("utf-8")
@@ -196,21 +183,20 @@ class ETL:
             except (IndexError, UnicodeDecodeError):
                 continue
             cpnt_order, func_block = Knowledge(processed).add_knowledge()
+            if not cpnt_order or not func_block:
+                continue
             data = dict()
             data["test_id"] = test_id
             data["time_stamp"] = int(datetime.timestamp(time_stamp))
             data["cpnt_order"] = cpnt_order
             data["func_block"] = func_block
             data["bug_id"] = bug_id
-            data["md5sum"] = self.check_sum(func_block)
-            # deduplication
-            is_insert = True
-            for doc in documents:
-                if doc["md5sum"] == data["md5sum"] and doc["time_stamp"] >= data["time_stamp"]:
-                    is_insert = False
-                    break
-            if is_insert:
-                documents.append(data)
+            data["md5sum"] = hashlib.md5("".join("".join(i) for i in func_block).encode("utf-8")).hexdigest()
+            # deduplication via set
+            if data["md5sum"] in hash_value:
+                continue
+            hash_value.add(data["md5sum"])
+            documents.append(data)
         return documents
 
     def load(self):
