@@ -1,7 +1,7 @@
 # crash-similarity-inspector
 [![REUSE status](https://api.reuse.software/badge/github.com/SAP/crash-similarity-inspector)](https://api.reuse.software/info/github.com/SAP/crash-similarity-inspector)
 
-Inspect the similarity of crash dump based on AST, and build syntax tree using [Python bindings for Clang](https://github.com/llvm/llvm-project/tree/main/clang/bindings/python).
+Inspect the similarity of crash dumps based on AST, and build syntax tree using [Python bindings for Clang](https://github.com/llvm/llvm-project/tree/main/clang/bindings/python).
 
 It's nominated as candidate to the **Best Industry Paper Award** in the 31st International Symposium on Software Reliability Engineering:
 ![](https://raw.githubusercontent.com/snlndod/mPOST/master/KDetector/00.png)
