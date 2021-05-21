@@ -34,6 +34,7 @@ class DP:
             elif dp[i-1][j] > dp[i][j-1]:
                 i -= 1
             else:
+                # column preference
                 j -= 1
         return pos1, pos2
 
