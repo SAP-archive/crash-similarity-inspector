@@ -15,11 +15,8 @@ class Knowledge:
     config = configparser.ConfigParser()
     config_path = os.path.join(os.getcwd(), "config.ini")
     config.read(config_path)
-    # MongoDB
-    host = config.get("mongodb", "host")
-    port = config.getint("mongodb", "port")
     # Stop
-    stop_words = config.get("stop", "words")
+    stop_words = set(config.get("stop", "words").split())
 
     def __init__(self, processed):
         self.processed = processed
@@ -33,23 +30,19 @@ class Knowledge:
         Returns:
             Function blocks are composed of class, namespace, ...
         """
-        blocks = []
         # handle anonymous namespace
         if "(anonymous namespace)" in function:
             function = function.replace("(anonymous namespace)", "")
+        # extract function blocks
         if "(" in function:
             function = function[:function.find("(")]
         if "<" in function:
             function = function[:function.find("<")]
-        # remove return type
-        if " " in function:
-            function = function[function.rfind(" ") + 1:]
+        function = function[function.rfind(" ") + 1:]
         # filter function with special characters
         if re.search(r"[^\w:~]", function):
-            return blocks
-        for block in [i for i in function.split("::") if i]:
-            blocks.append(block)
-        return blocks
+            return []
+        return [i for i in function.split("::") if i]
 
     @staticmethod
     def execute_shell(command):
@@ -104,7 +97,7 @@ class Knowledge:
             function = self.unboxing(function)
             if not function:
                 continue
-            component = self.to_component(path)
+            component = function[0]
             # obtain cpnt_order and func_block
             if not cpnt_order or component != cpnt_order[-1]:
                 cpnt_order.append(component)
