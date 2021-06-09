@@ -97,7 +97,8 @@ class Knowledge:
             function = self.unboxing(function)
             if not function:
                 continue
-            component = function[0]
+            # component = function[0]
+            component = self.to_component(path)
             # obtain cpnt_order and func_block
             if not cpnt_order or component != cpnt_order[-1]:
                 cpnt_order.append(component)

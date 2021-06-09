@@ -90,10 +90,8 @@ class Sample:
         groups = self.group_data()
         for group in groups:
             positives.extend(list(combinations(group, 2)))
-        while True:
+        for _ in range(len(positives)):
             group1, group2 = sample(groups, 2)
             negatives.append((sample(group1, 1)[0], sample(group2, 1)[0]))
-            if len(negatives) == len(positives):
-                break
         print("\x1b[32mSuccessfully completed data sampling ({} x 2).\x1b[0m".format(len(positives)))
         return [negatives, positives]
