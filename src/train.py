@@ -36,10 +36,10 @@ class Train:
         """
         with MongoConnection(self.host, self.port) as mongo:
             collection = mongo.connection["kdetector"]["dataset"]
-            source = collection.find_one({"test_id": sample[0]})
-            target = collection.find_one({"test_id": sample[1]})
-            order_pair = [source["cpnt_order"], target["cpnt_order"]]
-            block_pair = [source["func_block"], target["func_block"]]
+            src = collection.find_one({"test_id": sample[0]})
+            tgt = collection.find_one({"test_id": sample[1]})
+            order_pair = [src["cpnt_order"], tgt["cpnt_order"]]
+            block_pair = [src["func_block"], tgt["func_block"]]
         return Calculate(order_pair, block_pair).calculate_sim(m, n)
 
     def draw_curve(self, m, n):
@@ -66,7 +66,7 @@ class Train:
         m = self.config.getfloat("model", "m")
         n = self.config.getfloat("model", "n")
         # obtain optimal cut-off point
-        max_score, index = 0, 0
+        max_score = idx = 0
         true_label, pred_score = self.draw_curve(m, n)
         precision, recall, thresholds = precision_recall_curve(true_label, pred_score)
         for i in range(1, len(precision)):
@@ -74,8 +74,8 @@ class Train:
                 # raise precision importance via F-Measure
                 curr_score = (1 + 0.5 ** 2) * precision[i] * recall[i] / ((0.5 ** 2) * precision[i] + recall[i])
                 if curr_score > max_score:
-                    max_score, index = curr_score, i
-        threshold = thresholds[index]
+                    max_score, idx = curr_score, i
+        threshold = thresholds[idx]
         print("\nThreshold={:.2%}".format(threshold))
         # output FP and FN
         for label, samples in enumerate(self.dataset):
@@ -91,8 +91,7 @@ class Train:
         """
         Obtain tuned parameters and update them to configuration file.
         """
-        ap_max = 0.0
-        m_opt, n_opt = 0.0, 0.0
+        ap_max = m_opt = n_opt = 0.0
         print("Start parameter tuning...")
         for m in arange(0.0, 2.1, 0.1):
             for n in arange(0.0, 2.1, 0.1):
@@ -100,8 +99,7 @@ class Train:
                 ap = average_precision_score(true_label, pred_score)
                 print("m=%.1f, n=%.1f, AP=%.3f" % (m, n, ap))
                 if ap > ap_max:
-                    ap_max = ap
-                    m_opt, n_opt = m, n
+                    ap_max, m_opt, n_opt = ap, m, n
         print("\x1b[32mM_OPT=%.1f, N_OPT=%.1f, AP_MAX=%.3f\x1b[0m" % (m_opt, n_opt, ap_max))
         # update model parameters
         self.config.set("model", "m", "%.1f" % m_opt)

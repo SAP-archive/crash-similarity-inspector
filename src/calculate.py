@@ -31,8 +31,7 @@ class Calculate:
             The features used for calculation.
         """
         positions, distances = [], []
-        pos1, pos2 = DP().lcs_position(self.order_pair[0], self.order_pair[1])
-        for i, j in zip(pos1, pos2):
+        for i, j in DP().lcs_position(self.order_pair[0], self.order_pair[1]):
             positions.append(max(i, j))
             distances.append(DP().normalized_dist(self.block_pair[0][i], self.block_pair[1][j]))
         return list(zip(positions, distances))
@@ -47,14 +46,14 @@ class Calculate:
         Returns:
             sim: The similarity result.
         """
-        numerator, denominator = 0.0, 0.0
+        numerator = denominator = 0.0
         features = self.obtain_feature()
-        len_max = len(max(self.order_pair, key=len))
         for pos, dist in features:
             numerator += math.exp(-m * pos) * math.exp(-n * dist)
-        for i in range(len_max):
+        max_len = len(max(self.order_pair, key=len))
+        for i in range(max_len):
             denominator += math.exp(-m * i)
         sim = numerator / denominator
         if not debug:
             return sim
-        Log().formula_print(features, len_max, sim)
+        Log().formula_print(features, max_len, sim)
