@@ -71,11 +71,11 @@ class Component:
         git_root = "hana"
         # update source code base
         if os.path.exists(git_root):
-            print("Removing from '{}'...".format(git_root))
-            cmd = "rm -fr {}".format(git_root)
+            print(f"Removing from '{git_root}'...")
+            cmd = f"rm -fr {git_root}"
             subprocess.call(cmd.split(" "))
             print("\x1b[32mSuccessfully removed code base.\x1b[0m")
-        cmd = "git clone --branch master --depth 1 {} {}".format(self.git_url, git_root)
+        cmd = f"git clone --branch master --depth 1 {self.git_url} {git_root}"
         subprocess.call(cmd.split(" "))
         component_map = dict()
         queue = [git_root]
@@ -101,7 +101,7 @@ class Component:
             collection = mongo.connection["kdetector"]["component"]
             collection.drop()
             collection.insert_many(documents)
-        print("\x1b[32mSuccessfully updated Component-File mapping ({}).\x1b[0m".format(len(documents)))
+        print(f"\x1b[32mSuccessfully updated Component-File mapping ({len(documents)}).\x1b[0m")
 
     def best_matched(self, path):
         """

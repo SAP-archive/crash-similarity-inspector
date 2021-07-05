@@ -76,15 +76,15 @@ class Train:
                 if curr_score > max_score:
                     max_score, idx = curr_score, i
         threshold = thresholds[idx]
-        print("\nThreshold={:.2%}".format(threshold))
+        print(f"\nThreshold={threshold:.2%}")
         # output FP and FN
         for label, samples in enumerate(self.dataset):
             for sample in samples:
                 score = self.predict_score(sample, m, n)
                 if label == 0 and score >= threshold:
-                    print("FP: {} {}".format(sample[0], sample[1]))
+                    print(f"FP: {sample[0]} {sample[1]}")
                 if label == 1 and score < threshold:
-                    print("FN: {} {}".format(sample[0], sample[1]))
+                    print(f"FN: {sample[0]} {sample[1]}")
         print("\n", end="")
 
     def training(self):
@@ -97,12 +97,12 @@ class Train:
             for n in arange(0.0, 2.1, 0.1):
                 true_label, pred_score = self.draw_curve(m, n)
                 ap = average_precision_score(true_label, pred_score)
-                print("m=%.1f, n=%.1f, AP=%.3f" % (m, n, ap))
+                print(f"m={m:.1f}, n={n:.1f}, AP={ap:.3f}")
                 if ap > ap_max:
                     ap_max, m_opt, n_opt = ap, m, n
-        print("\x1b[32mM_OPT=%.1f, N_OPT=%.1f, AP_MAX=%.3f\x1b[0m" % (m_opt, n_opt, ap_max))
+        print(f"\x1b[32mM_OPT={m_opt:.1f}, N_OPT={n_opt:.1f}, AP_MAX={ap_max:.3f}\x1b[0m")
         # update model parameters
-        self.config.set("model", "m", "%.1f" % m_opt)
-        self.config.set("model", "n", "%.1f" % n_opt)
+        self.config.set("model", "m", f"{m_opt:.1f}")
+        self.config.set("model", "n", f"{n_opt:.1f}")
         self.config.write(open(self.config_path, "w"))
         self.debugging()

@@ -67,10 +67,10 @@ class Knowledge:
         """
         git_root = "hana"
         if "/" not in path:
-            cmd = "find {} -name {}".format(git_root, path)
+            cmd = f"find {git_root} -name {path}"
             full_path = self.execute_shell(cmd.split(" "))
         else:
-            full_path = "{}/{}".format(git_root, path)
+            full_path = f"{git_root}/{path}"
         if not full_path or "\n" in full_path:
             component = "UNKNOWN"
         else:
@@ -92,7 +92,7 @@ class Knowledge:
                 continue
             # demangling
             if function.startswith("_Z"):
-                cmd = "c++filt -p {}".format(function)
+                cmd = f"c++filt -p {function}"
                 function = self.execute_shell(cmd.split(" "))
             function = self.unboxing(function)
             if not function:

@@ -42,7 +42,7 @@ class StopWord:
         for row in result:
             count += 1
             test_id = row[0]
-            print("{}, {}/{}".format(test_id, count, total))
+            print(f"{test_id}, {count}/{total}")
             try:
                 dump = ETL().extract_cdb(test_id)
                 processed = Process(dump).internal_process()

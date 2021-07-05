@@ -93,5 +93,5 @@ class Sample:
         for _ in range(len(positives)):
             group1, group2 = sample(groups, 2)
             negatives.append((sample(group1, 1)[0], sample(group2, 1)[0]))
-        print("\x1b[32mSuccessfully completed data sampling ({} x 2).\x1b[0m".format(len(positives)))
+        print(f"\x1b[32mSuccessfully completed data sampling ({len(positives)} x 2).\x1b[0m")
         return [negatives, positives]

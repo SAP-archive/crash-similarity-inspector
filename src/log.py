@@ -28,20 +28,20 @@ class Log:
         for i in range(len(message[0])):
             blocks = textwrap.fill(" ".join(message[1][i]), width=self.width)
             cursor_up += len(blocks.split("\n")) + 1
-            print("\x1b[0;36m{}\x1b[0m".format(message[0][i]))
+            print(f"\x1b[0;36m{message[0][i]}\x1b[0m")
             print(blocks)
-        print("\x1b[{}A".format(cursor_up), end="")
+        print(f"\x1b[{cursor_up}A", end="")
         # print the right part
         cursor_down = 0
         for i in range(len(message[2])):
             blocks = textwrap.fill(" ".join(message[3][i]), width=self.width)
             cursor_down += len(blocks.split("\n")) + 1
-            print("\x1b[{}C  |  \x1b[0;36m{}\x1b[0m".format(self.width, message[2][i]))
+            print(f"\x1b[{self.width}C  |  \x1b[0;36m{message[2][i]}\x1b[0m")
             for line in blocks.split("\n"):
-                print("\x1b[{}C  |  {}".format(self.width, line))
+                print(f"\x1b[{self.width}C  |  {line}")
         if cursor_down < cursor_up:
             for _ in range(cursor_up - cursor_down):
-                print("\x1b[{}C  |".format(self.width))
+                print(f"\x1b[{self.width}C  |")
         print("\n", end="")
 
     def formula_print(self, features, len_max, sim):
@@ -52,19 +52,12 @@ class Log:
             len_max: The longer length of 2 component sequences.
             sim: The similarity result.
         """
-        numerator, denominator = "", ""
         if features:
-            # obtain numerator
-            for pos, dist in features:
-                numerator += "e^-{}*{}*".format(self.m, pos) + "e^-%.1f*%.4f + " % (self.n, dist)
-            numerator = numerator[:-len(" + ")]
-            # obtain denominator
-            for i in range(len_max):
-                denominator += "e^-{}*{} + ".format(self.m, i)
-            denominator = denominator[:-len(" + ")]
-            print("             {}".format(numerator))
-            print("Similarity = {} = {:.2%}".format("-" * max(len(numerator), len(denominator)), sim))
-            print("             {}".format(denominator))
+            numerator = " + ".join(f"e^-{self.m}*{pos}*e^-{self.n}*{dist:.4f}" for pos, dist in features)
+            denominator = " + ".join(f"e^-{self.m}*{i}" for i in range(len_max))
+            print(f"             {numerator}")
+            print(f"Similarity = {'-' * max(len(numerator), len(denominator))} = {sim:.2%}")
+            print(f"             {denominator}")
         else:
             print("Similarity = 0.00%")
         print("\n", end="")
@@ -82,7 +75,7 @@ class Log:
         for msg in message:
             num = int(msg[1] / max_len * self.width)
             if num >= 1:
-                print("{} {}:{}".format(tick * num, msg[0], msg[1]))
+                print(f"{tick * num} {msg[0]}:{msg[1]}")
             else:
-                print("{} {}:{}".format(slim_tick, msg[0], msg[1]))
+                print(f"{slim_tick} {msg[0]}:{msg[1]}")
         print("\n", end="")

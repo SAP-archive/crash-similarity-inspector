@@ -33,7 +33,7 @@ class ETL:
             test_id, start_time, dump_link, bug_id.
         """
         set_schema = """SET SCHEMA TESTER;"""
-        extract_content = """
+        extract_content = f"""
         SELECT TEST_MANY.ID, TEST_MANY.START_TIME, TEST_MANY.LINK, TEST_MANY.BUG_ID
         FROM
             (
@@ -51,7 +51,7 @@ class ETL:
                     JOIN TEST_COMMENTS ON TEST_VALID.ID = TEST_COMMENTS.ID
                     JOIN TEST_PROFILES ON TEST_CASES.ID_TEST_PROFILE = TEST_PROFILES.ID
                     JOIN MAKES ON TEST_PROFILES.ID_MAKE = MAKES.ID
-                WHERE TEST_CASES.START_TIME >= ADD_MONTHS(TO_DATE(CURRENT_DATE), -{})
+                WHERE TEST_CASES.START_TIME >= ADD_MONTHS(TO_DATE(CURRENT_DATE), -{self.months})
                     AND TEST_LOG_FILES.DUMP_TYPE = 'CRASH'
                     AND TEST_LOG_FILES.LINK NOT LIKE '%recursive.trc%'
                     AND TEST_COMMENTS.BUG_ID != 0
@@ -74,7 +74,7 @@ class ETL:
                     JOIN TEST_COMMENTS ON TEST_VALID.ID = TEST_COMMENTS.ID
                     JOIN TEST_PROFILES ON TEST_CASES.ID_TEST_PROFILE = TEST_PROFILES.ID
                     JOIN MAKES ON TEST_PROFILES.ID_MAKE = MAKES.ID
-                WHERE TEST_CASES.START_TIME >= ADD_MONTHS(TO_DATE(CURRENT_DATE), -{})
+                WHERE TEST_CASES.START_TIME >= ADD_MONTHS(TO_DATE(CURRENT_DATE), -{self.months})
                     AND TEST_LOG_FILES.DUMP_TYPE = 'CRASH'
                     AND TEST_COMMENTS.BUG_ID != 0
                     AND MAKES.BUILD_PURPOSE = 'G'
@@ -84,7 +84,7 @@ class ETL:
             ON TEST_MANY.ID = TEST_ONLY.ID
         WHERE TEST_ONLY.NUM = 1
         ORDER BY TEST_MANY.START_TIME DESC;
-        """.format(self.months, self.months)
+        """
         with SqlConnection(self.qdb_uri).connection as sql:
             sql.execute(set_schema)
             result = sql.execute(extract_content).fetchall()
@@ -96,19 +96,19 @@ class ETL:
         Returns:
             callstack_string.
         """
-        extract_content = """
+        extract_content = f"""
         SELECT HANAQA.CRASHES.CALLSTACK_STRING
         FROM HANAQA.QADB_CRASHES
             JOIN HANAQA.CRASHES
             ON HANAQA.QADB_CRASHES.CRASH_ID = HANAQA.CRASHES.CRASH_ID
-        WHERE HANAQA.QADB_CRASHES.TEST_CASE_ID = {}
+        WHERE HANAQA.QADB_CRASHES.TEST_CASE_ID = {test_id}
         UNION ALL
         SELECT BUGZILLA.CRASHES.CALLSTACK_STRING
         FROM HANAQA.QADB_CRASHES
             JOIN BUGZILLA.CRASHES
             ON HANAQA.QADB_CRASHES.CRASH_ID = BUGZILLA.CRASHES.CRASH_ID
-        WHERE HANAQA.QADB_CRASHES.TEST_CASE_ID = {};
-        """.format(test_id, test_id)
+        WHERE HANAQA.QADB_CRASHES.TEST_CASE_ID = {test_id};
+        """
         with SqlConnection(self.cdb_uri).connection as sql:
             result = sql.execute(extract_content).fetchall()
         return result[0][0]
@@ -120,7 +120,7 @@ class ETL:
             test_id, dump_link.
         """
         set_schema = """SET SCHEMA TESTER;"""
-        extract_content = """
+        extract_content = f"""
         SELECT TEST_MANY.ID
         FROM
             (
@@ -130,7 +130,7 @@ class ETL:
                     JOIN TEST_REVIEW ON TEST_CASES.ID = TEST_REVIEW.ID_TEST_CASE
                     JOIN TEST_PROFILES ON TEST_CASES.ID_TEST_PROFILE = TEST_PROFILES.ID
                     JOIN MAKES ON TEST_PROFILES.ID_MAKE = MAKES.ID
-                WHERE TEST_CASES.START_TIME >= ADD_MONTHS(TO_DATE(CURRENT_DATE), -{})
+                WHERE TEST_CASES.START_TIME >= ADD_MONTHS(TO_DATE(CURRENT_DATE), -{self.months})
                     AND TEST_LOG_FILES.DUMP_TYPE = 'CRASH'
                     AND TEST_LOG_FILES.LINK NOT LIKE '%recursive.trc%'
                     AND MAKES.BUILD_PURPOSE = 'G'
@@ -144,7 +144,7 @@ class ETL:
                     JOIN TEST_REVIEW ON TEST_CASES.ID = TEST_REVIEW.ID_TEST_CASE
                     JOIN TEST_PROFILES ON TEST_CASES.ID_TEST_PROFILE = TEST_PROFILES.ID
                     JOIN MAKES ON TEST_PROFILES.ID_MAKE = MAKES.ID
-                WHERE TEST_CASES.START_TIME >= ADD_MONTHS(TO_DATE(CURRENT_DATE), -{})
+                WHERE TEST_CASES.START_TIME >= ADD_MONTHS(TO_DATE(CURRENT_DATE), -{self.months})
                     AND TEST_LOG_FILES.DUMP_TYPE = 'CRASH'
                     AND MAKES.BUILD_PURPOSE = 'G'
                     AND (MAKES.COMPONENT = 'HANA' OR MAKES.COMPONENT = 'Engine')
@@ -153,7 +153,7 @@ class ETL:
             ON TEST_MANY.ID = TEST_ONLY.ID
         WHERE TEST_ONLY.NUM = 1
         ORDER BY TEST_MANY.START_TIME DESC;
-        """.format(self.months, self.months)
+        """
         with SqlConnection(self.qdb_uri).connection as sql:
             sql.execute(set_schema)
             result = sql.execute(extract_content).fetchall()
@@ -172,7 +172,7 @@ class ETL:
         for row in result:
             count += 1
             test_id, time_stamp, url, bug_id = row
-            print("{}, {}/{}".format(test_id, count, total))
+            print(f"{test_id}, {count}/{total}")
             try:
                 if requests.get(url, verify=False).status_code == 200:
                     dump = requests.get(url, verify=False).content.decode("utf-8")
@@ -211,4 +211,4 @@ class ETL:
             collection = mongo.connection["kdetector"]["dataset"]
             collection.drop()
             collection.insert_many(documents)
-        print("\x1b[32mSuccessfully executed ETL process ({}).\x1b[0m".format(len(documents)))
+        print(f"\x1b[32mSuccessfully executed ETL process ({len(documents)}).\x1b[0m")
