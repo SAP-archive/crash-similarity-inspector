@@ -18,12 +18,13 @@ class DP:
         # fill
         for i in range(1, m + 1):
             for j in range(1, n + 1):
-                if seq1[i-1] == seq2[j-1]:
-                    dp[i][j] = dp[i-1][j-1] + [(i - 1, j - 1)]
+                # top first
+                if seq1[m-i] == seq2[n-j]:
+                    dp[i][j] = dp[i-1][j-1] + [(m - i, n - j)]
                 else:
                     # column preference
                     dp[i][j] = max(dp[i][j-1], dp[i-1][j], key=len)
-        return dp[-1][-1]
+        return dp[-1][-1][::-1]
 
     @staticmethod
     def normalized_dist(seq1, seq2):
