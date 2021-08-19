@@ -16,11 +16,8 @@ class Process:
         Returns:
             processed: Processed string with function, path information.
         """
-        processed = []
-        # call stack pattern
         stack_pattern = re.compile(r"\n(\[CRASH_STACK][\s\S]+)\[CRASH_REGISTERS]", re.M)
-        content = stack_pattern.findall(self.dump)
-        stack = content[0]
+        stack = stack_pattern.findall(self.dump)[0]
         # backtrace pattern
         pattern = re.compile(r"-\n[ ]*\d+:[ ](.+)[^-]+Source:[ ](.+):", re.M)
         frames = pattern.findall(stack)
@@ -29,8 +26,7 @@ class Process:
             # remove offset
             offset_pattern = re.compile(r"([ ]const)*[ ][+][ ]0x\w+")
             function = re.sub(offset_pattern, "", function)
-            processed.append([function, path])
-        return processed
+            yield [function, path]
 
     def internal_process(self):
         """
@@ -38,11 +34,9 @@ class Process:
         Returns:
             processed: Processed string with function, path information.
         """
-        processed = []
         backtrace = self.dump[:self.dump.find("\n\n")]
         pattern = re.compile(r"^\d+:[ ](.+)[ ]at[ ](.+)", re.M)
         frames = pattern.findall(backtrace)
         for frame in frames:
             function, path = frame
-            processed.append([function, path])
-        return processed
+            yield [function, path]

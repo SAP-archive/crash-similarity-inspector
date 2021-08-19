@@ -4,6 +4,7 @@ import os
 import re
 import subprocess
 
+from collections import deque
 from pool import MongoConnection
 
 
@@ -47,7 +48,7 @@ class Component:
         Returns:
             Component-File mapping.
         """
-        result = dict()
+        ret = dict()
         for cpnt in components:
             # convert child component
             if isinstance(cpnt, tuple):
@@ -57,12 +58,12 @@ class Component:
                         path = os.path.join(path, layer)
                     # wild character
                     for wild in glob.iglob(path):
-                        result[wild] = cpnt[0]
+                        ret[wild] = cpnt[0]
                 continue
             # convert parent component
             if isinstance(cpnt, str):
-                result[prefix] = cpnt
-        return result
+                ret[prefix] = cpnt
+        return ret
 
     def update_component(self):
         """
@@ -78,10 +79,10 @@ class Component:
         cmd = f"git clone --branch master --depth 1 {self.git_url} {git_root}"
         subprocess.call(cmd.split(" "))
         component_map = dict()
-        queue = [git_root]
+        queue = deque([git_root])
         # BFS
-        while len(queue) > 0:
-            prefix = queue.pop(0)
+        while queue:
+            prefix = queue.popleft()
             cmk_path = os.path.join(prefix, "CMakeLists.txt")
             if os.path.exists(cmk_path):
                 components = self.find_component(cmk_path)

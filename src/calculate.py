@@ -54,6 +54,4 @@ class Calculate:
         for i in range(max_len):
             denominator += math.exp(-m * i)
         sim = numerator / denominator
-        if not debug:
-            return sim
-        Log().formula_print(features, max_len, sim)
+        return sim if not debug else Log().formula_print(features, max_len, sim)
