@@ -32,10 +32,10 @@ class Component:
         """
         with open(path, "r", encoding="utf-8") as fp:
             content = fp.read()
-        parent_pattern = re.compile(r'SET_COMPONENT\("(.+)"\)', re.M)
-        child_pattern = re.compile(r'SET_COMPONENT\("(.+)"\n([^)]+)\)', re.M)
-        parent = parent_pattern.findall(content)
-        children = child_pattern.findall(content)
+        p_pattern = re.compile(r'SET_COMPONENT\("(.+)"\)', re.M)
+        c_pattern = re.compile(r'SET_COMPONENT\("(.+)"\n([^)]+)\)', re.M)
+        parent = p_pattern.findall(content)
+        children = c_pattern.findall(content)
         return parent + children
 
     @staticmethod
@@ -50,17 +50,13 @@ class Component:
         """
         ret = dict()
         for cpnt in components:
-            # convert child component
+            # child component
             if isinstance(cpnt, tuple):
-                for item in [i.strip() for i in cpnt[1].split("\n") if i.strip()]:
-                    path = prefix
-                    for layer in item.split("/"):
-                        path = os.path.join(path, layer)
-                    # wild character
-                    for wild in glob.iglob(path):
+                for suffix in [i.strip() for i in cpnt[1].split("\n") if i.strip()]:
+                    for wild in glob.iglob(f"{prefix}/{suffix}"):
                         ret[wild] = cpnt[0]
                 continue
-            # convert parent component
+            # parent component
             if isinstance(cpnt, str):
                 ret[prefix] = cpnt
         return ret

@@ -39,7 +39,8 @@ class Function:
                 curr_path = os.path.join(prefix, node)
                 if os.path.isdir(curr_path):
                     stack.append(curr_path)
-                elif os.path.splitext(curr_path)[-1] in [".h", ".hpp"]:
+                    continue
+                if os.path.splitext(curr_path)[-1] in [".h", ".hpp"]:
                     headers.append(curr_path)
         return headers
 
@@ -83,7 +84,7 @@ class Function:
         }
         cpnt = Component().best_matched(path)
         for node in tu.cursor.walk_preorder():
-            if node.location.file is not None and node.location.file.name == path and node.spelling:
+            if node.location.file and node.location.file.name == path and node.spelling:
                 if str(node.kind).split(".")[1] in decl_kinds:
                     func = self.fully_qualified(node, path)
                     func_dict[func] = cpnt
@@ -98,10 +99,9 @@ class Function:
             The function parsing result from code base.
         """
         # using multi-process
-        pool = Pool(40)
-        functions = pool.map(self.find_function, paths)
-        pool.close()
-        pool.join()
+        pool = Pool(os.cpu_count())
+        functions = pool.imap(self.find_function, paths)
+        pool.close(), pool.join()
         ret = dict()
         for func_dict in [i for i in functions if i]:
             for func in func_dict:
@@ -110,8 +110,8 @@ class Function:
                 while "::::" in k:
                     k = k.replace("::::", "::")
                 # remove special characters
-                if re.search(r"[^0-9a-zA-Z:_~]", k):
-                    idx = re.search(r"[^0-9a-zA-Z:_~]", k).span()[0]
+                if re.search(r"[^\w:~]", k):
+                    idx = re.search(r"[^\w:~]", k).span()[0]
                     k = k[:idx]
                 ret[k] = func_dict[func]
         return ret
