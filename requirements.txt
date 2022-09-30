@@ -3,7 +3,7 @@ chardet==3.0.4
 clang==11.0
 hdbcli==2.6.61
 idna==2.10
-joblib==0.17.0
+joblib==1.2.0
 numpy==1.19.4
 pymongo==3.11.1
 python-bugzilla==3.0.2
